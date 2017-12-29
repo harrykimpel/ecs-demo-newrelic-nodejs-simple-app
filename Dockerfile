@@ -10,6 +10,6 @@ COPY index.js .
 COPY newrelic.js .
 COPY views /usr/src/app/views
 
-EXPOSE 3000
+EXPOSE 80
 
 CMD [ "node", "index.js" ]

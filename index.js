@@ -35,26 +35,6 @@ app.use(function(req, res, next) {
   next();
 });
 
-var ecsMetadata = 'Not found. ECS_ENABLE_CONTAINER_METADATA must be set to true.';
-if (process.env.ECS_CONTAINER_METADATA_FILE) {
-  ecsMetadata = fs.readFileSync(process.env.ECS_CONTAINER_METADATA_FILE, 'utf8');
-
-  // annotate transactions middleware
-  // with ecs metadata
-  app.use(function(req, res, next) {
-    newrelic.addCustomParameters({
-      "ImageID": ecsMetadata.ImageID,
-      "ImageName": ecsMetadata.ImageName,
-      "DockerContainerName": ecsMetadata.DockerContainerName,
-      "ContainerName": ecsMetadata.ContainerName,
-      "TaskARN": ecsMetadata.TaskARN,
-      "Cluster": ecsMetadata.Cluster
-    });
-
-    next();
-  });
-}
-
 app.get('/', function (req, res) {
   if (process.env.THROW_ERROR) {
     try {
@@ -65,6 +45,22 @@ app.get('/', function (req, res) {
       return res.status(500).send(e.toString());
     }
   }
+
+  // annotate transactions middleware
+  // with ecs metadata
+  var ecsMetadata = 'Not found. ECS_ENABLE_CONTAINER_METADATA must be set to true.';
+  if (process.env.ECS_CONTAINER_METADATA_FILE) {
+    ecsMetadata = fs.readFileSync(process.env.ECS_CONTAINER_METADATA_FILE, 'utf8');
+    newrelic.addCustomParameters({
+      "ImageID": ecsMetadata.ImageID,
+      "ImageName": ecsMetadata.ImageName,
+      "DockerContainerName": ecsMetadata.DockerContainerName,
+      "ContainerName": ecsMetadata.ContainerName,
+      "TaskARN": ecsMetadata.TaskARN,
+      "Cluster": ecsMetadata.Cluster
+    });
+  }
+
   setTimeout(function() {
     res.render('index', {
       title: 'New Relic Node.js Example',

@@ -61,6 +61,8 @@ app.get('/', function (req, res) {
   }
 
   ecsMetadata = getMetadata();
+
+  newrelic.addCustomParameter('IMAGE_URI', ecsMetadata.ImageName || 'unknown');
   res.render('index', {
     title: 'New Relic Node.js Example',
     message: 'Send a string to redis.',

@@ -71,7 +71,7 @@ app.get('/', function (req, res) {
     title: 'New Relic Node.js Example',
     message: 'Send a string to redis.',
     envs: JSON.stringify(process.env, '', 2),
-    envMetadata: ecsMetadata
+    envMetadata: JSON.stringify(ecsMetadata, '', 2)
     });
 });
 

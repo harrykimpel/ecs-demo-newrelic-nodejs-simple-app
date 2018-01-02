@@ -65,13 +65,14 @@ app.get('/', function (req, res) {
       return res.status(500).send(e.toString());
     }
   }
-
-  res.render('index', {
-    title: 'New Relic Node.js Example',
-    message: 'Send a string to redis.',
-    envs: JSON.stringify(process.env, '', 2),
-    envMetadata: ecsMetadata
-   });
+  setTimeout(function() {
+    res.render('index', {
+      title: 'New Relic Node.js Example',
+      message: 'Send a string to redis.',
+      envs: JSON.stringify(process.env, '', 2),
+      envMetadata: ecsMetadata
+     });
+  }, process.env.INDEX_TIMEOUT || 150);
 });
 
 app.get('/healthz', function (req, res) {

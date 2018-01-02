@@ -27,27 +27,13 @@ var maybeError = function() {
 
 // Look busy middleware
 app.use(function(req, res, next) {
-  if (process.env.LOOK_BUSY) {
-    console.log('looking busy')
     lookBusy();
-  }
-
   next();
 });
 
-app.get('/', function (req, res) {
-  if (process.env.THROW_ERROR) {
-    try {
-      maybeError();
-    } catch (e) {
-      console.error('error: ', e);
-      newrelic.noticeError(e);
-      return res.status(500).send(e.toString());
-    }
-  }
-
-  // annotate transactions middleware
-  // with ecs metadata
+// annotate transactions middleware
+// with ecs metadata
+var getMetadata = function() {
   var ecsMetadata = 'Not found. ECS_ENABLE_CONTAINER_METADATA must be set to true.';
   if (process.env.ECS_CONTAINER_METADATA_FILE) {
     ecsMetadata = fs.readFileSync(process.env.ECS_CONTAINER_METADATA_FILE, 'utf8');
@@ -60,15 +46,27 @@ app.get('/', function (req, res) {
       "Cluster": ecsMetadata.Cluster
     });
   }
+  return ecsMetadata;
+}
 
-  setTimeout(function() {
-    res.render('index', {
-      title: 'New Relic Node.js Example',
-      message: 'Send a string to redis.',
-      envs: JSON.stringify(process.env, '', 2),
-      envMetadata: ecsMetadata
-     });
-  }, process.env.INDEX_TIMEOUT || 150);
+app.get('/', function (req, res) {
+  if (process.env.THROW_ERROR) {
+    try {
+      maybeError();
+    } catch (e) {
+      console.error('error: ', e);
+      newrelic.noticeError(e);
+      return res.status(500).send(e.toString());
+    }
+  }
+
+  ecsMetadata = getMetadata();
+  res.render('index', {
+    title: 'New Relic Node.js Example',
+    message: 'Send a string to redis.',
+    envs: JSON.stringify(process.env, '', 2),
+    envMetadata: ecsMetadata
+    });
 });
 
 app.get('/healthz', function (req, res) {

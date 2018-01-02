@@ -36,7 +36,11 @@ app.use(function(req, res, next) {
 var getMetadata = function() {
   var ecsMetadata = 'Not found. ECS_ENABLE_CONTAINER_METADATA must be set to true.';
   if (process.env.ECS_CONTAINER_METADATA_FILE) {
-    ecsMetadata = fs.readFileSync(process.env.ECS_CONTAINER_METADATA_FILE, 'utf8');
+    try {
+      ecsMetadata = JSON.parse(fs.readFileSync(process.env.ECS_CONTAINER_METADATA_FILE, 'utf8'));
+    } catch (e) {
+      return 'Error parsing file';
+    }
     newrelic.addCustomParameters({
       "ImageID": ecsMetadata.ImageID,
       "ImageName": ecsMetadata.ImageName,
